@@ -8,12 +8,10 @@ def build(data):
     tree = [None]*2*int(math.pow(2, math.ceil(math.log(len(data), 2))))
     return build_r(0, len(data)-1, 0)
 
-# going one level too deep on build. It's node 5 that has start == end == 2 not node 2. Look into this
-
 def build_r(start, end, current_index):
     global tree
     if start == end:
-        tree[current_index] = data[start]
+        tree[current_index] = int(data[start])
         return tree[current_index]
     else:
         mid = int((start+end)/2)
@@ -22,11 +20,7 @@ def build_r(start, end, current_index):
 
 def update(current_index, start, end, difference):
     global tree
-    print("Current index is "+str(current_index))
     if tree[current_index] is None:
-        print ("About to return None for node "+str(current_index))
-        print ("Start is "+str(start))
-        print ("end is "+str(end))
         return 0
     
     if start != end:
@@ -38,16 +32,26 @@ def update(current_index, start, end, difference):
         return tree[current_index]
             
 if __name__ == "__main__":
-    n = int(sys.stdin.readline())
-    data = list(map(int, sys.stdin.readline().split()))
-    
-    build(data)
-    print(list(map(str, tree)))
+    with open("case12-input.txt") as infile, open("test-output.txt", "w") as outfile:
+        n = int(infile.readline())
+        data = infile.readline().split()
 
-    q = input()
-    q = list(map(int, sys.stdin.readline().split()))
-    
-    for ii in range(len(q)):
-        update(0, 0, n, q[ii])
-        print(list(map(str, tree)))
-        sys.stdout.write(str(tree[0])+"\n")
+        build(data)
+
+        q = input()
+        q = infile.readline().split()
+
+        for ii in range(15):
+            update(0, 0, n-1, int(q[ii]))
+            outfile.write(str(tree[0])+"\n")
+#        n = int(sys.stdin.readline())
+#        data = list(map(int, sys.stdin.readline().split()))
+#
+#        build(data)
+#
+#        q = input()
+#        q = list(map(int, sys.stdin.readline().split()))
+#
+#        for ii in range(len(q)):
+#            update(0, 0, n-1, q[ii])
+#            sys.stdout.write(str(tree[0])+"\n")
