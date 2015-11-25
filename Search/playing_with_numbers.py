@@ -1,82 +1,53 @@
 import math
+import sys
 
-class SegmentNode:
-    
-    def __init__(self, value, start=None, end=None):
-        self.value = value
-        self.start = start
-        self.end = end
+tree = []
 
-    def __add__(self, other):
-        if other is None:
-            return self
-        
-        if self.start < other.start:
-            start = self.start
-        else:
-            start = other.start
-            
-        if self.end > other.end:
-            end = self.end
-        else:
-            end = other.end
-        
-        value = abs(self.value) + abs(other.value)
-        return SegmentNode(value, start, end)
-    
-    def __radd__(self, other):
-        return self + other
-    
-    def __str__(self):
-        return str(self.value)
+def build(data):
+    global tree
+    tree = [None]*2*int(math.pow(2, math.ceil(math.log(len(data), 2))))
+    return build_r(0, len(data)-1, 0)
 
-class SegmentTree:
+# going one level too deep on build. It's node 5 that has start == end == 2 not node 2. Look into this
 
-    def __init__(self, data, node_type):
-        self.tree = [None]*2*int(math.pow(2, math.ceil(math.log(len(data), 2))))
-        self.data = data
-        self.node_type = node_type
-        self.build(0, len(data)-1, 0)
+def build_r(start, end, current_index):
+    global tree
+    if start == end:
+        tree[current_index] = data[start]
+        return tree[current_index]
+    else:
+        mid = int((start+end)/2)
+        tree[current_index] = abs(build_r(start, mid, current_index*2+1)) + abs(build_r(mid+1, end, current_index*2+2))
+        return tree[current_index]
+
+def update(current_index, start, end, difference):
+    global tree
+    print("Current index is "+str(current_index))
+    if tree[current_index] is None:
+        print ("About to return None for node "+str(current_index))
+        print ("Start is "+str(start))
+        print ("end is "+str(end))
+        return 0
     
-    def __str__(self):
-        return str(list(map(str, self.tree)))
-    
-    def __len__(self):
-        return len(self.tree)
-    
-    def build(self, start, end, current_index):
-        if start == end:
-            self.tree[current_index] = self.node_type(self.data[start], start, end)
-            return self.tree[current_index]
-        else:
-            midpoint = int((start+end)/2)
-            self.tree[current_index] = self.merge(self.build(start, midpoint, current_index*2+1),
-                                                  self.build(midpoint+1, end, current_index*2+2))
-            return self.tree[current_index]        
-    
-    def merge(self, left_node, right_node):
-        return left_node + right_node
-    
-    def update(self, current_index, difference):
-        node = self.tree[current_index]
-                
-        if node.start != node.end:
-            self.tree[current_index] = self.merge(self.update(current_index*2+1, difference),
-                                                  self.update(current_index*2+2, difference))
-            return self.tree[current_index]
-        else:
-            self.tree[current_index].value += difference
-            return self.tree[current_index]
+    if start != end:
+        mid = int((start+end)/2)
+        tree[current_index] = abs(update(current_index*2+1, start, mid, difference)) + abs(update(current_index*2+2, mid+1, end, difference))
+        return tree[current_index]
+    else:
+        tree[current_index] += difference
+        return tree[current_index]
             
 if __name__ == "__main__":
-    n = int(input())
-    data = list(map(int, input().split()))
+    n = int(sys.stdin.readline())
+    data = list(map(int, sys.stdin.readline().split()))
     
-    tree = SegmentTree(data, SegmentNode)
+    build(data)
+    print(list(map(str, tree)))
 
     q = input()
-    q = list(map(int, input().split()))
+    q = list(map(int, sys.stdin.readline().split()))
     
     for ii in range(len(q)):
-        tree.update(0, q[ii])
-        print(tree.tree[0])
+        update(0, 0, n, q[ii])
+        print(list(map(str, tree)))
+        sys.stdout.write(str(tree[0])+"\n")
